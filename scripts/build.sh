@@ -89,7 +89,7 @@ abort() {
 trap abort INT TERM
 
 function Gen_Rand_Str {
-    tr -dc 'a-zA-Z0-9' </dev/urandom | fold -w "$1" | head -n 1
+    head /dev/urandom | tr -dc A-Za-z0-9 | head -c"$1"
 }
 
 default() {
@@ -846,8 +846,7 @@ else
         echo ":warning: Since OpenGApps doesn't officially support Android 12.1 yet, lock the variant to pico!"
     fi
 fi
-artifact_name="WSA${name1}${name2}_${WSA_VER}_${ARCH}_${WSA_REL}"
-echo "$artifact_name"
+artifact_name="WSA"
 echo -e "\nFinishing building...."
 if [ -f "$OUTPUT_DIR" ]; then
     $SUDO rm -rf "${OUTPUT_DIR:?}"
@@ -870,15 +869,16 @@ if [ "$COMPRESS_OUTPUT" ] || [ -n "$COMPRESS_FORMAT" ]; then
     fi
     rm -f "${OUTPUT_PATH:?}" || abort
     if [ "$COMPRESS_FORMAT" = "7z" ]; then
-        echo "Compressing with 7z"
+        echo "Compressing with 7z..."
         7z a "${OUTPUT_PATH:?}" "$WORK_DIR/wsa/$artifact_name" || abort
     elif [ "$COMPRESS_FORMAT" = "xz" ]; then
-        echo "Compressing with tar xz"
+        echo "Compressing with tar xz..."
         if ! (tar -cP -I 'xz -9 -T0' -f "${OUTPUT_PATH:?}" "$WORK_DIR/wsa/$artifact_name"); then
             echo "Out of memory? Trying again with single threads..."
             tar -cPJvf "${OUTPUT_PATH:?}" "$WORK_DIR/wsa/$artifact_name" || abort
         fi
     elif [ "$COMPRESS_FORMAT" = "zip" ]; then
+        echo "Compressing with zip..."
         7z -tzip a "${OUTPUT_PATH:?}" "$WORK_DIR/wsa/$artifact_name" || abort
     fi
 else
